@@ -42,6 +42,13 @@ function warning() {
 # /Logging Functions#
 
 
+# Setup necesary dirs
+function setup() {
+	if [ ! -e "${PUPPET_PUSH_BASE}/pending" ]; then
+		mkdir -p "${PUPPET_PUSH_BASE}/pending"
+	fi
+}
+
 # Toss temporary files
 function cleanup() {
 	info 'Cleaning up'
@@ -142,6 +149,7 @@ function check_sshkey_access() {
 	fi
 }
 
+setup
 check_sshkey
 check_sshkey_access
 sync_fact

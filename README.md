@@ -57,7 +57,9 @@ puppet_module_dir="/etc/puppet/modules/production"
 
 Run
 ---
+```
 /opt/puppet-push/bin/puppet-push <nodename>
+```
 
 
 Disclaimer

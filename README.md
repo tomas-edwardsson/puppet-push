@@ -28,5 +28,5 @@ GPLv3
 
 Author
 ======
-Tomas Edwardsson <tommi@ok.is>
+Tomas Edwardsson <tommi@tommi.org>
 Sponsored by the Icelandic National Hospital

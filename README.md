@@ -45,9 +45,7 @@ edit /opt/puppet-push/bin/puppet-push - interesting stuff there
 verbose=0
 PATH=/opt/puppet-push/bin:/bin:/usr/bin
 PUPPET_PUSH_BASE="/opt/puppet-push"
-TARGET=$1
 PUPPET_VAR_DIR="/var/lib/puppet"
-REMOTE_SSH_USER=root
 PUPPET_MODULE_DIR=/etc/puppet/modules/production
 ```
 

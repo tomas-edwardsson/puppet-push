@@ -1,0 +1,156 @@
+#!/bin/bash
+
+# Copyright (C) 2012  Tomas Edwardsson
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+verbose=0
+PATH=/opt/puppet-push/bin:/bin:/usr/bin
+PUPPET_PUSH_BASE="/opt/puppet-push"
+TARGET=$1
+PUPPET_VAR_DIR="/var/lib/puppet"
+REMOTE_SSH_USER=root
+PUPPET_MODULE_DIR=/etc/puppet/modules/production
+
+if [ -z "${TARGET}" ]; then
+	echo "Usage $0 <hostname>" 1>&2
+	exit 1
+fi
+
+# Logging Functions #
+function info() {
+	[ $verbose -gt 0 ] || return 0
+	local msg=$1
+	echo -e "\e[00;32m${msg}\e[00m"
+}
+
+function warning() {
+	local msg=$1
+	echo -e "\e[01;33m${msg}\e[00m"
+}
+# /Logging Functions#
+
+
+# Toss temporary files
+function cleanup() {
+	info 'Cleaning up'
+	rm -f "${PUPPET_PUSH_BASE}/pending/${TARGET}.yaml"
+	rm -f "${PUPPET_PUSH_BASE}/pending/${TARGET}.cat"
+	rm -f "${PUPPET_PUSH_BASE}/pending/${TARGET}.cat.doctored"
+}
+
+# Print message and exit
+function kickthebucket() {
+	local errormsg=$1
+
+	cleanup
+	echo -e "Fatal: \e[00;31m${errormsg}\e[00m" 1>&2
+	exit 1
+}
+
+
+# Generates facts on ${TARGET} and copies them to puppet master
+function sync_fact() {
+	info 'Syncing Fact'
+	ssh ${REMOTE_SSH_USER}@${TARGET} "mkdir -p ${PUPPET_PUSH_BASE};puppet facts find x --render-as yaml" > "${PUPPET_PUSH_BASE}/pending/${TARGET}.yaml"
+
+	# Find the FQDN in the fact file
+	fact_fqdn=$(awk '$1 == "fqdn:" { print $2}' "${PUPPET_PUSH_BASE}/pending/${TARGET}.yaml")
+
+	if [ "${fact_fqdn}" != "${TARGET}" ]; then
+		kickthebucket "Please specify the hosts FQDN, ${fact_fqdn} != ${TARGET}" 
+	fi
+
+	# Move the facts to the central puppet location
+	mv "${PUPPET_PUSH_BASE}/pending/${TARGET}.yaml" "${PUPPET_VAR_DIR}/yaml/facts/kvm1.os.eniac.ok.is.yaml" \
+		|| kickthebucket "Unable to copy facts for node ${TARGET} to puppet directory"
+
+	# Perms are important
+	chown puppet:puppet "${PUPPET_VAR_DIR}/yaml/facts/${TARGET}.yaml"
+	chmod 640 "${PUPPET_VAR_DIR}/yaml/facts/${TARGET}.yaml"
+}
+ 
+
+# Generates a catalog on the puppet master
+function compile_catalog() {
+	info "Compiling catalog"
+	puppet master --compile ${TARGET} |grep -v 'notice: Compiled catalog for' > "${PUPPET_PUSH_BASE}/pending/${TARGET}.cat"
+}
+
+
+# Pushes files from the File[] resource which use "source =>"
+# Only copies relevant files extracted from catalog
+function push_files() {
+	info "Pusing module files"
+	(
+		cd ${PUPPET_MODULE_DIR} || kickthebucket "Unable to enter puppet modules dir ${PUPPET_MODULE_DIR}"
+		rsync -a -R $(extract-file-sources.py ${TARGET}) ${REMOTE_SSH_USER}@${TARGET}:${PUPPET_PUSH_BASE}/modules/ || \
+			kickthebucket "problems rsync'ing files"
+	)
+}
+
+
+# Modify puppet:/// paths to local /opt/puppet-push/modules path
+function doctor_catalog() {
+	info "Doctoring catalog replacing puppet:/// to local paths"
+	cat "${PUPPET_PUSH_BASE}/pending/${TARGET}.cat" | perl -pe "s|puppet:///(.+?)/(.+)$|${PUPPET_PUSH_BASE}/modules/\$1/files/\$2|" \
+		> "${PUPPET_PUSH_BASE}/pending/${TARGET}.cat.doctored"
+}
+
+# Pushes the catalog to the ${TARGET}
+function push_catalog() {
+	info "Pusing catalog to ${TARGET}"
+	rsync "${PUPPET_PUSH_BASE}/pending/${TARGET}.cat.doctored" ${REMOTE_SSH_USER}@${TARGET}:${PUPPET_PUSH_BASE}/catalog || \
+		kickthebucket "Unable to push new catalog to ${TARGET}"
+}
+
+
+# Syncs local /var/lib/puppet/lib to remote /var/lib/puppet/lib (pluginsync)
+function pluginsync() {
+	info "Plugin sync from ${PUPPET_VAR_DIR}/lib to ${TARGET}:${PUPPET_VAR_DIR}/lib"
+	rsync -a "${PUPPET_VAR_DIR}/lib" "${PUPPET_VAR_DIR}/" || \
+		kickthebucket "Unable to pluginsync ${PUPPET_VAR_DIR}/lib"
+}
+
+# Runs the actual "puppet apply" on ${TARGET}
+function applycatalog() {
+	info "Running catalog on ${TARGET}"
+	ssh ${REMOTE_SSH_USER}@${TARGET} "puppet apply --catalog ${PUPPET_PUSH_BASE}/catalog -v"
+}
+
+function check_sshkey() {
+	info "Checking availabilty of ssh keys"
+	ls ${HOME}/.ssh/id_?sa &> /dev/null || kickthebucket "No ssh keys in ${HOME}/.ssh"
+}
+function check_sshkey_access() {
+	info "Trying PubKeyAuth with ssh key"
+	ssh -o PasswordAuthentication=no ${REMOTE_SSH_USER}@${TARGET} "/bin/true"
+	if [ $? -gt 0 ]; then
+		warning "SSH PubKeyAuthentication not enabled, attempting to copy keys"
+		ssh-copy-id ${REMOTE_SSH_USER}@${TARGET} || kickthebucket "Unable to copy keys"
+	fi
+}
+
+check_sshkey
+check_sshkey_access
+sync_fact
+compile_catalog
+push_files
+doctor_catalog
+push_catalog
+pluginsync
+applycatalog
+cleanup
+
+exit 0

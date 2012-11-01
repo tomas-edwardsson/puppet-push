@@ -154,7 +154,23 @@ function check_sshkey_access() {
 	fi
 }
 
+verlte() {
+    [  "$1" = "$(echo -e "$1\n$2" | sort -V | head -n1)" ]
+}
+
+verlt() {
+    [ "$1" = "$2" ] && return 1 || verlte $1 $2
+}
+
+function check_puppet() {
+	info "Checking puppet installation"
+	local puppet_version=$(puppet --version || kickthebucket "Puppet not installed?")
+	info "Puppet ${puppet_version}"
+	verlt 2.7.0 ${puppet_version} || kickthebucket "You need at least puppet version 2.7.0, you have ${puppet_version}"
+}
+
 setup
+check_puppet
 check_sshkey
 check_sshkey_access
 sync_fact

@@ -11,6 +11,7 @@ What does it need?
 * SSH key access to the target node as root
 * puppet installed on the remote node and local node
 * puppet version 2.7.0 or newer
+* Alternate site.pp (site-push.pp)
 
 
 What does it do?
@@ -54,6 +55,21 @@ edit /opt/puppet-push/bin/extract-file-sources.py
 ```
 puppet_push_path="/opt/puppet-push"
 puppet_module_dir="/etc/puppet/modules/production"
+```
+
+Add alternative site-push.pp
+----------------------------
+We need a alternative site.pp if you are using a filebucket server for the pull
+based hosts.
+
+Containing:
+```
+filebucket { local:
+        server => puppet,
+        path => "/var/lib/puppet/clientbucket",
+}
+
+File { backup => local }
 ```
 
 Run

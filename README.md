@@ -59,7 +59,7 @@ puppet_module_dir="/etc/puppet/modules/production"
 
 Add alternative site-push.pp
 ----------------------------
-We need a alternative site.pp if you are using a filebucket server for the pull
+We need a alternative site.pp (eg. /etc/puppet/manifests/site-push.pp) if you are using a filebucket server for the pull
 based hosts.
 
 Containing:

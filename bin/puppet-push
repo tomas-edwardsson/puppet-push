@@ -105,11 +105,15 @@ function compile_catalog() {
 # Only copies relevant files extracted from catalog
 function push_files() {
 	info "Pusing module files"
-	(
+	local FILESOURCES=$(extract-file-sources.py ${TARGET})
+	if [ -n "${FILESOURCES}" ]; then
 		cd ${PUPPET_MODULE_DIR} || kickthebucket "Unable to enter puppet modules dir ${PUPPET_MODULE_DIR}"
-		rsync -a -R $(extract-file-sources.py ${TARGET}) ${REMOTE_SSH_USER}@${TARGET}:${PUPPET_PUSH_BASE}/modules/ || \
+		rsync -a -R ${FILESOURCES} ${REMOTE_SSH_USER}@${TARGET}:${PUPPET_PUSH_BASE}/modules/ || \
 			kickthebucket "problems rsync'ing files"
-	)
+		cd /
+	else
+		info "...No module files"
+	fi
 }
 
 

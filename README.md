@@ -65,7 +65,7 @@ based hosts.
 Containing:
 ```
 filebucket { local:
-        server => puppet,
+        server => false,
         path => "/var/lib/puppet/clientbucket",
 }
 

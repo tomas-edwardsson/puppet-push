@@ -25,17 +25,6 @@ PUPPET_MODULE_DIR=/etc/puppet/modules/production
 # Different site manifest (for clientbucket)
 PUSH_SITE_MANIFEST="/etc/puppet/manifests/site-push.pp"
 
-TARGET=$1
-
-# Shift the target off argv
-shift
-PUPPET_ARGS="$@"
-
-if [ -z "${TARGET}" ]; then
-	echo "Usage $0 <hostname>" 1>&2
-	exit 1
-fi
-
 # Logging Functions #
 function info() {
 	[ $verbose -gt 0 ] || return 0
@@ -48,6 +37,28 @@ function warning() {
 	echo -e "\e[01;33m${msg}\e[00m"
 }
 # /Logging Functions#
+
+TARGET=$1
+
+# Shift the target off argv
+shift
+
+if [ ! -z $1 ] && [ $1 == "--environment" ]; then
+	shift
+	if [ -z $1 ]; then
+		warning 'No environment supplied!'
+		exit 1
+	fi
+	PUPPET_ENVIRONMENT=$1
+	shift
+fi
+
+PUPPET_ARGS="$@"
+
+if [ -z "${TARGET}" ]; then
+	echo "Usage $0 <hostname>" 1>&2
+	exit 1
+fi
 
 
 # Setup necesary dirs
@@ -85,6 +96,15 @@ function sync_fact() {
 
 	if [ "${fact_fqdn}" != "${TARGET}" ]; then
 		kickthebucket "Please specify the hosts FQDN, ${fact_fqdn} != ${TARGET}" 
+	fi
+
+	# Apparently we need to delete the node yaml file so it re-evaluates it's environment
+	rm "${PUPPET_VAR_DIR}/yaml/node/${TARGET}.yaml"
+
+	# Change the environment
+	if [ ! -z ${PUPPET_ENVIRONMENT} ]; then
+		info "Forcing environment to ${PUPPET_ENVIRONMENT}"
+		sed -i "s/^    environment:.*$/    environment: ${PUPPET_ENVIRONMENT}/g" "${PUPPET_PUSH_BASE}/pending/${TARGET}.yaml"
 	fi
 
 	# Move the facts to the central puppet location

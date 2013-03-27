@@ -9,7 +9,7 @@ What am I trying to solve?
 What does it need?
 ------------------
 * SSH key access to the target node as root
-* puppet installed on the remote node and local node
+* puppet and rsync installed on the remote node and local node
 * puppet version 2.7.0 or newer
 * Alternate site.pp (site-push.pp)
 

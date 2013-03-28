@@ -104,7 +104,8 @@ function compile_catalog() {
 	if [ -n "${PUSH_SITE_MANIFEST}" ]; then
 		MANIFEST="--manifest ${PUSH_SITE_MANIFEST}"
 	fi
-	puppet master --compile ${TARGET} ${MANIFEST} /etc/puppet/manifests/site-push.pp |grep -v 'notice: Compiled catalog for' > "${PUPPET_PUSH_BASE}/pending/${TARGET}.cat" || kickthebucket "Unable to compile catalog for ${TARGET}"
+	puppet master --compile ${TARGET} ${MANIFEST} /etc/puppet/manifests/site-push.pp > "${PUPPET_PUSH_BASE}/pending/${TARGET}.cat" || kickthebucket "Unable to compile catalog for ${TARGET}"
+	sed -i '/notice: Compiled catalog for/d' "${PUPPET_PUSH_BASE}/pending/${TARGET}.cat"
 }
 
 

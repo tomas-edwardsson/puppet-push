@@ -112,7 +112,7 @@ function compile_catalog() {
 # Pushes files from the File[] resource which use "source =>"
 # Only copies relevant files extracted from catalog
 function push_files() {
-	info "Pusing module files"
+	info "Pushing module files"
 	local FILESOURCES=$(extract-file-sources.py ${TARGET})
 	if [ -n "${FILESOURCES}" ]; then
 		cd ${PUPPET_MODULE_DIR} || kickthebucket "Unable to enter puppet modules dir ${PUPPET_MODULE_DIR}"
@@ -134,7 +134,7 @@ function doctor_catalog() {
 
 # Pushes the catalog to the ${TARGET}
 function push_catalog() {
-	info "Pusing catalog to ${TARGET}"
+	info "Pushing catalog to ${TARGET}"
 	rsync "${PUPPET_PUSH_BASE}/pending/${TARGET}.cat.doctored" ${REMOTE_SSH_USER}@${TARGET}:${PUPPET_PUSH_BASE}/catalog || \
 		kickthebucket "Unable to push new catalog to ${TARGET}"
 }
@@ -154,7 +154,7 @@ function applycatalog() {
 }
 
 function check_sshkey() {
-	info "Checking availabilty of ssh keys"
+	info "Checking availability of ssh keys"
 	ls ${HOME}/.ssh/id_?sa &> /dev/null || kickthebucket "No ssh keys in ${HOME}/.ssh"
 }
 function check_sshkey_access() {

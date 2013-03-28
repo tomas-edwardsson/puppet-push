@@ -88,8 +88,9 @@ License
 GPLv3
 
 
-Author
+Authors
 ======
+Pall Valmundsson <pall.valmundsson@gmail.com>
 Tomas Edwardsson <tommi@tommi.org>
 Sponsored by the Icelandic National Hospital
 

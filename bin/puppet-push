@@ -181,10 +181,23 @@ function check_puppet() {
 	verlt 2.7.0 ${puppet_version} || kickthebucket "You need at least puppet version 2.7.0, you have ${puppet_version}"
 }
 
+function check_remote_puppet() {
+	info "Checking remote puppet installation"
+	local puppet_version=$(ssh -o PasswordAuthentication=no ${REMOTE_SSH_USER}@${TARGET} "puppet --version" || kickthebucket "Puppet not installed?")
+	info "Remote puppet ${puppet_version}"
+	verlt 2.7.0 ${puppet_version} || kickthebucket "You need at least puppet version 2.7.0, you have ${puppet_version}"
+}
+function check_remote_rsync() {
+	info "Checking remote rsync installation"
+	ssh -o PasswordAuthentication=no ${REMOTE_SSH_USER}@${TARGET} "which rsync" > /dev/null || kickthebucket "Rsync not installed?"
+}
+
 setup
 check_puppet
 check_sshkey
 check_sshkey_access
+check_remote_puppet
+check_remote_rsync
 sync_fact
 compile_catalog
 push_files

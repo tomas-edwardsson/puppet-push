@@ -89,7 +89,14 @@ function kickthebucket() {
 # Generates facts on ${TARGET} and copies them to puppet master
 function sync_fact() {
 	info 'Syncing Fact'
-	ssh ${REMOTE_SSH_USER}@${TARGET} "mkdir -p ${PUPPET_PUSH_BASE};puppet facts find x --render-as yaml" > "${PUPPET_PUSH_BASE}/pending/${TARGET}.yaml"
+
+	# Change the environment
+	if [ ! -z ${PUPPET_ENVIRONMENT} ]; then
+		info "Forcing environment to ${PUPPET_ENVIRONMENT}"
+		local ENVIRONMENT_ARGS="--environment ${PUPPET_ENVIRONMENT}"
+	fi
+
+	ssh ${REMOTE_SSH_USER}@${TARGET} "mkdir -p ${PUPPET_PUSH_BASE};puppet facts find x --render-as yaml ${ENVIRONMENT_ARGS}" > "${PUPPET_PUSH_BASE}/pending/${TARGET}.yaml"
 
 	# Find the FQDN in the fact file
 	fact_fqdn=$(awk '$1 == "fqdn:" { print $2}' "${PUPPET_PUSH_BASE}/pending/${TARGET}.yaml")
@@ -100,12 +107,6 @@ function sync_fact() {
 
 	# Apparently we need to delete the node yaml file so it re-evaluates it's environment
 	rm "${PUPPET_VAR_DIR}/yaml/node/${TARGET}.yaml"
-
-	# Change the environment
-	if [ ! -z ${PUPPET_ENVIRONMENT} ]; then
-		info "Forcing environment to ${PUPPET_ENVIRONMENT}"
-		sed -i "s/^    environment:.*$/    environment: ${PUPPET_ENVIRONMENT}/g" "${PUPPET_PUSH_BASE}/pending/${TARGET}.yaml"
-	fi
 
 	# Move the facts to the central puppet location
 	mv "${PUPPET_PUSH_BASE}/pending/${TARGET}.yaml" "${PUPPET_VAR_DIR}/yaml/facts/${TARGET}.yaml" \

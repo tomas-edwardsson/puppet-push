@@ -19,7 +19,7 @@ if [ -f /etc/puppet-push.conf ]; then
 	. /etc/puppet-push.conf
 fi
 
-verbose=1
+verbose=${VERBOSE-0}
 PATH=/usr/libexec/puppet-push:/bin:/usr/bin
 PUPPET_PUSH_BASE="/var/lib/puppet-push"
 

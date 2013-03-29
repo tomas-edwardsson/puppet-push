@@ -21,8 +21,8 @@ import sys
 import os
 import pipes
 
-puppet_push_path="/opt/puppet-push"
-puppet_module_dir="/etc/puppet/modules/production"
+puppet_push_path = "/var/lib/puppet-push"
+puppet_module_dir = os.environ["PUPPET_MODULE_DIR"]
 
 def main():
     if len(sys.argv) != 2:

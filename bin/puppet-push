@@ -15,15 +15,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-verbose=1
-PATH=/opt/puppet-push/bin:/bin:/usr/bin
-PUPPET_PUSH_BASE="/opt/puppet-push"
-PUPPET_VAR_DIR="/var/lib/puppet"
-REMOTE_SSH_USER=root
-PUPPET_MODULE_DIR=/etc/puppet/modules/production
+if [ -f /etc/puppet-push.conf ]; then
+	. /etc/puppet-push.conf
+fi
+
+verbose=${VERBOSE-0}
+PATH=/usr/libexec/puppet-push:/bin:/usr/bin
+PUPPET_PUSH_BASE="/var/lib/puppet-push"
+
+PUPPET_VAR_DIR=${PUPPET_VAR_DIR-/var/lib/puppet}
+REMOTE_SSH_USER=${REMOTE_SSH_USER-root}
+PUPPET_MODULE_DIR=${PUPPET_MODULE_DIR-/etc/puppet/modules/production}
+
+# We need to export this so the python file extracter can read it
+export PUPPET_MODULE_DIR
 
 # Different site manifest (for clientbucket)
-PUSH_SITE_MANIFEST="/etc/puppet/manifests/site-push.pp"
+PUSH_SITE_MANIFEST=${PUSH_SITE_MANIFEST-/etc/puppet/manifests/site-push.pp}
 
 # Logging Functions #
 function info() {

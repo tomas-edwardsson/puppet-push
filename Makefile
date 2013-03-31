@@ -7,6 +7,9 @@ PKG_DIR=pkg
 PKG_NAME=$(NAME)-$(VERSION)
 PKG=$(PKG_DIR)/$(PKG_NAME).tar.gz
 SIG=$(PKG_DIR)/$(PKG_NAME).asc
+
+# Hack, since RHEL6 git doesn't know how to .tar.gz archives.
+TARPKG=$(PKG_DIR)/$(PKG_NAME).tar
  
 PREFIX?=/usr
 DOC_DIR=$(PREFIX)/share/doc/$(PKG_NAME)
@@ -23,7 +26,8 @@ pkg:
 	mkdir -p $(PKG_DIR)
  
 $(PKG): pkg
-	git archive --format=tar.gz --output=$(PKG) --prefix=$(PKG_NAME)/ HEAD
+	git archive --format=tar --output=$(TARPKG) --prefix=$(PKG_NAME)/ HEAD
+	gzip $(TARPKG)
  
 build: $(PKG)
  

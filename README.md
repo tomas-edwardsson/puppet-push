@@ -37,24 +37,28 @@ yum install git
 git clone
 ---------
 ```
-git clone git://github.com/tomas-edwardsson/puppet-push.git /opt/puppet-push
+git clone git://github.com/tomas-edwardsson/puppet-push.git
+```
+
+build rpm or install
+--------------------
+```
+make rpm
+```
+and install that, or
+```
+make install
 ```
 
 configure
 ---------
-edit /opt/puppet-push/bin/puppet-push - interesting stuff there
+edit /etc/puppet-push.conf
 ```
-verbose=0
-PATH=/opt/puppet-push/bin:/bin:/usr/bin
-PUPPET_PUSH_BASE="/opt/puppet-push"
 PUPPET_VAR_DIR="/var/lib/puppet"
 PUPPET_MODULE_DIR=/etc/puppet/modules/production
-```
+REMOTE_SSH_USER=root
 
-edit /opt/puppet-push/bin/extract-file-sources.py
-```
-puppet_push_path="/opt/puppet-push"
-puppet_module_dir="/etc/puppet/modules/production"
+VERBOSE=0
 ```
 
 Add alternative site-push.pp
@@ -75,7 +79,7 @@ File { backup => local }
 Run
 ---
 ```
-/opt/puppet-push/bin/puppet-push <nodename>
+puppet-push <nodename>
 ```
 
 

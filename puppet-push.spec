@@ -22,7 +22,7 @@ Puppet defaults to using a pull model, nodes pull their configs. puppet-push
 generates the nodes catalog an pushes it to it via ssh.
 
 %prep
-%setup -q -n %{name}
+%setup -q -n %{name}-%{version}
 
 %install
 rm -rf $RPM_BUILD_ROOT

@@ -129,18 +129,24 @@ function sync_fact() {
 # Generates a catalog on the puppet master
 function compile_catalog() {
 	info "Compiling catalog"
-	local MANIFEST=""
+	local EXTRA_ARGS=""
 	if [ -n "${PUSH_SITE_MANIFEST}" ]; then
-		MANIFEST="--manifest ${PUSH_SITE_MANIFEST}"
+		EXTRA_ARGS=" --manifest ${PUSH_SITE_MANIFEST}"
 	fi
 
 	# Change the environment
 	if [ ! -z ${PUPPET_ENVIRONMENT} ]; then
 		info "Forcing environment to ${PUPPET_ENVIRONMENT}"
-		local ENVIRONMENT_ARGS="--environment ${PUPPET_ENVIRONMENT}"
+		local EXTRA_ARGS=" --environment ${PUPPET_ENVIRONMENT}"
 	fi
 
-	puppet master ${ENVIRONMENT_ARGS} --compile ${TARGET} ${MANIFEST} /etc/puppet/manifests/site-push.pp > "${PUPPET_PUSH_BASE}/pending/${TARGET}.cat" || kickthebucket "Unable to compile catalog for ${TARGET}"
+	# Change the environment
+	if [ ! -z ${PUPPET_CONF_DIR} ]; then
+		info "Forcing confdir to ${PUPPET_CONF_DIR}"
+		local EXTRA_ARGS=" --confdir ${PUPPET_CONF_DIR}"
+	fi
+
+	puppet master --compile ${TARGET} ${EXTRA_ARGS} > "${PUPPET_PUSH_BASE}/pending/${TARGET}.cat" || kickthebucket "Unable to compile catalog for ${TARGET}"
 	sed -i '/notice: Compiled catalog for/d' "${PUPPET_PUSH_BASE}/pending/${TARGET}.cat"
 }
 

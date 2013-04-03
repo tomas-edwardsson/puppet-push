@@ -148,7 +148,7 @@ function compile_catalog() {
 
 	puppet master --compile ${TARGET} ${EXTRA_ARGS} > "${PUPPET_PUSH_BASE}/pending/${TARGET}.cat" || kickthebucket "Unable to compile catalog for ${TARGET}"
 	sed -i '/notice: Compiled catalog for/d' "${PUPPET_PUSH_BASE}/pending/${TARGET}.cat"
-	sed -i '/^d' "${PUPPET_PUSH_BASE}/pending/${TARGET}.cat"
+	sed -i '/^/d' "${PUPPET_PUSH_BASE}/pending/${TARGET}.cat"
 }
 
 

@@ -146,8 +146,21 @@ function compile_catalog() {
 		local EXTRA_ARGS=" --confdir ${PUPPET_CONF_DIR}"
 	fi
 
-	puppet master --compile ${TARGET} ${EXTRA_ARGS} > "${PUPPET_PUSH_BASE}/pending/${TARGET}.cat" || kickthebucket "Unable to compile catalog for ${TARGET}"
-	sed -i '/notice: Compiled catalog for/d' "${PUPPET_PUSH_BASE}/pending/${TARGET}.cat"
+	COMPILELOG=$(mktemp '/tmp/puppet-push-compile.XXXXXXXX')
+	trap "rm -f ${COMPILELOG}" EXIT
+
+	puppet master --compile ${TARGET} -l ${COMPILELOG} ${EXTRA_ARGS} > "${PUPPET_PUSH_BASE}/pending/${TARGET}.cat" || kickthebucket "Unable to compile catalog for ${TARGET}"
+
+	# If we have any problems 
+	egrep '^\[.;..m(fail|warning|err|crit|alert)' "${PUPPET_PUSH_BASE}/pending/${TARGET}.cat" > /dev/null
+	if [ "$?" == "0" ]; then
+		warning "Problems in compiling catalog"
+		cat ${COMPILELOG}
+	elif [ $verbose -gt 0 ]; then
+		egrep '^' "${PUPPET_PUSH_BASE}/pending/${TARGET}.cat"
+	fi
+	
+	# Remove messages from the catalog
 	sed -i '/^/d' "${PUPPET_PUSH_BASE}/pending/${TARGET}.cat"
 }
 
@@ -192,8 +205,21 @@ function pluginsync() {
 
 # Runs the actual "puppet apply" on ${TARGET}
 function applycatalog() {
-	info "Running catalog on ${TARGET}"
-	ssh ${REMOTE_SSH_USER}@${TARGET} "puppet apply --catalog ${PUPPET_PUSH_BASE}/catalog ${PUPPET_ARGS}"
+	info "Applying catalog on ${TARGET}"
+
+	APPLYLOG=$(mktemp '/tmp/puppet-push-apply.XXXXXXXX')
+	trap "rm -f ${APPLYLOG}" EXIT
+	ssh ${REMOTE_SSH_USER}@${TARGET} "puppet apply --catalog ${PUPPET_PUSH_BASE}/catalog ${PUPPET_ARGS}" \
+		&> ${APPLYLOG}
+
+	egrep '^\[.;..m(fail|warning|err|crit|alert)' "${APPLYLOG}" > /dev/null
+	if [ "$?" == "0" ]; then
+		warning "Problems in applying catalog"
+		cat ${APPLYLOG}
+	elif [ $verbose -gt 0 ]; then
+		cat ${APPLYLOG}
+	fi
+	cat ${APPLYLOG}
 }
 
 function check_sshkey() {
@@ -251,3 +277,4 @@ applycatalog
 cleanup
 
 exit 0
+

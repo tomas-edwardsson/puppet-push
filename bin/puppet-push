@@ -171,7 +171,7 @@ function push_files() {
 # Modify puppet:/// paths to local /opt/puppet-push/modules path
 function doctor_catalog() {
 	info "Doctoring catalog replacing puppet:/// to local paths"
-	cat "${PUPPET_PUSH_BASE}/pending/${TARGET}.cat" | perl -pe "s|puppet:///(.+?)/(.+)$|${PUPPET_PUSH_BASE}/modules/\$1/files/\$2|" \
+	cat "${PUPPET_PUSH_BASE}/pending/${TARGET}.cat" | perl -pe "s|puppet:///modules/(.+?)/(.+)$|${PUPPET_PUSH_BASE}/modules/\$1/files/\$2|" \
 		> "${PUPPET_PUSH_BASE}/pending/${TARGET}.cat.doctored"
 }
 

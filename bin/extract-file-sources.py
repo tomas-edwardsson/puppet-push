@@ -33,7 +33,7 @@ def main():
     r = get_file_sources(catalog)
 
     for source in r:
-        (module, path) = source.split('/', 1)
+        (module, path) = (source.split('/', 2))[1:]
         if os.path.exists("%s/%s/files/%s" % (puppet_module_dir, module, path)) is False:
             # This happens alot with variable expansion, not warning
             #sys.stderr.write("Warning: file referenced in module %s missing '%s/files/%s'\n" % (module, module, path))

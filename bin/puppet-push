@@ -219,7 +219,6 @@ function applycatalog() {
 	elif [ $verbose -gt 0 ]; then
 		cat ${APPLYLOG}
 	fi
-	cat ${APPLYLOG}
 }
 
 function check_sshkey() {

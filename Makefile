@@ -46,7 +46,12 @@ test:
 install:
 	install -D -m 755 -o root -g root bin/puppet-push $(BINDIR)/puppet-push
 	install -D -m 755 -o root -g root bin/extract-file-sources.py $(LIBEXECDIR)/extract-file-sources.py
-	install -D -m 755 -o root -g root -b etc/puppet-push.conf $(SYSCONFDIR)/puppet-push.conf
+	if [ -e "$(SYSCONFDIR)/puppet-push.conf" ]; then
+		echo "$(SYSCONFDIR)/puppet-push.conf exists, installing to $(SYSCONFDIR)/puppet-push.conf.new"
+		install -D -m 755 -o root -g root -b etc/puppet-push.conf $(SYSCONFDIR)/puppet-push.conf.new
+	else
+		install -D -m 755 -o root -g root -b etc/puppet-push.conf $(SYSCONFDIR)/puppet-push.conf
+	fi
 	for docfile in $(DOC_FILES); do install -D -m 755 -o root -g root $$docfile $(DOC_DIR)/$$docfile; done
 	mkdir -p $(SHAREDSTATEDIR)
  

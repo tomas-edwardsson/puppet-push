@@ -52,7 +52,7 @@ def get_file_sources(cat):
 
     * resource type is File
     * resource has parameter 'source'
-    * resource does not set recurse
+    * resource does not set recurselimit
     * resource source starts with puppet:///
     
     This function makes the following assumptions:
@@ -68,8 +68,9 @@ def get_file_sources(cat):
 
     sources = []
     for r in resources:
-        if r['parameters'].has_key('recurse') and r['parameters']['recurse'] != 'false':
-            raise Exception('Fatal: File resource %s defined in %s uses recursion, not supported' % ('a','a')) # TODO
+        if r['parameters'].has_key('recurselimit'):
+            raise Exception("Fatal: File resource '%s' defined in '%s' uses recurselimit, not supported" %
+                (r["title"], r["file"]))
         if type(r['parameters']['source']) is list:
             for source in r['parameters']['source']:
                 if source.startswith('puppet:///'):

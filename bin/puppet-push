@@ -172,7 +172,7 @@ function push_files() {
 	local FILESOURCES=$(extract-file-sources.py ${TARGET})
 	if [ -n "${FILESOURCES}" ]; then
 		cd ${PUPPET_MODULE_DIR} || kickthebucket "Unable to enter puppet modules dir ${PUPPET_MODULE_DIR}"
-		rsync -a -R ${FILESOURCES} ${REMOTE_SSH_USER}@${TARGET}:${PUPPET_PUSH_BASE}/modules/ || \
+		rsync -a -R --delete ${FILESOURCES} ${REMOTE_SSH_USER}@${TARGET}:${PUPPET_PUSH_BASE}/modules/ || \
 			kickthebucket "problems rsync'ing files"
 		cd /
 	else

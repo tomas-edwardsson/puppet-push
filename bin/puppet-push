@@ -25,10 +25,7 @@ PUPPET_PUSH_BASE="/var/lib/puppet-push"
 
 PUPPET_VAR_DIR=${PUPPET_VAR_DIR-/var/lib/puppet}
 REMOTE_SSH_USER=${REMOTE_SSH_USER-root}
-PUPPET_MODULE_DIR=${PUPPET_MODULE_DIR-/etc/puppet/modules/production}
-
-# We need to export this so the python file extracter can read it
-export PUPPET_MODULE_DIR
+PUPPET_ENVIRONMENT=${PUPPET_ENVIRONMENT-production}
 
 # Different site manifest (for clientbucket)
 PUSH_SITE_MANIFEST=${PUSH_SITE_MANIFEST-/etc/puppet/manifests/site-push.pp}
@@ -60,6 +57,12 @@ if [ ! -z $1 ] && [ $1 == "--environment" ]; then
 	PUPPET_ENVIRONMENT=$1
 	shift
 fi
+
+# Find the module path for the environment
+PUPPET_MODULE_DIR=`puppet config print modulepath --environment ${PUPPET_ENVIRONMENT}`
+
+# We need to export this so the python file extracter can read it
+export PUPPET_MODULE_DIR
 
 PUPPET_ARGS="$@"
 

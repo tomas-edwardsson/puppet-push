@@ -199,7 +199,7 @@ function push_catalog() {
 # Syncs local /var/lib/puppet/lib to remote /var/lib/puppet/lib (pluginsync)
 function pluginsync() {
 	info "Plugin sync from ${PUPPET_VAR_DIR}/lib to ${TARGET}:${PUPPET_VAR_DIR}/lib"
-	rsync -a "${PUPPET_VAR_DIR}/lib" "${PUPPET_VAR_DIR}/" || \
+	rsync -a "${PUPPET_VAR_DIR}/lib" ${TARGET}:"${PUPPET_VAR_DIR}/" || \
 		kickthebucket "Unable to pluginsync ${PUPPET_VAR_DIR}/lib"
 }
 
@@ -266,12 +266,12 @@ check_sshkey
 check_sshkey_access
 check_remote_puppet
 check_remote_rsync
+pluginsync
 sync_fact
 compile_catalog
 push_files
 doctor_catalog
 push_catalog
-pluginsync
 applycatalog
 cleanup
 

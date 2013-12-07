@@ -140,13 +140,13 @@ function compile_catalog() {
 	# Change the environment
 	if [ ! -z ${PUPPET_ENVIRONMENT} ]; then
 		info "Forcing environment to ${PUPPET_ENVIRONMENT}"
-		local EXTRA_ARGS=" --environment ${PUPPET_ENVIRONMENT}"
+		local EXTRA_ARGS="${EXTRA_ARGS} --environment ${PUPPET_ENVIRONMENT}"
 	fi
 
 	# Change the environment
 	if [ ! -z ${PUPPET_CONF_DIR} ]; then
 		info "Forcing confdir to ${PUPPET_CONF_DIR}"
-		local EXTRA_ARGS=" --confdir ${PUPPET_CONF_DIR}"
+		local EXTRA_ARGS="${EXTRA_ARGS} --confdir ${PUPPET_CONF_DIR}"
 	fi
 
 	COMPILELOG=$(mktemp '/tmp/puppet-push-compile.XXXXXXXX')

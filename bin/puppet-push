@@ -59,7 +59,7 @@ if [ ! -z $1 ] && [ $1 == "--environment" ]; then
 fi
 
 # Find the module path for the environment
-PUPPET_MODULE_DIR=`puppet config print modulepath --environment ${PUPPET_ENVIRONMENT}`
+PUPPET_MODULE_DIR=$(puppet config print modulepath --environment ${PUPPET_ENVIRONMENT})
 
 # We need to export this so the python file extracter can read it
 export PUPPET_MODULE_DIR

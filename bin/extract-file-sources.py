@@ -34,11 +34,12 @@ def main():
 
     for source in r:
         (module, path) = (source.split('/', 2))[1:]
-        if os.path.exists("%s/%s/files/%s" % (puppet_module_dir, module, path)) is False:
-            # This happens alot with variable expansion, not warning
-            #sys.stderr.write("Warning: file referenced in module %s missing '%s/files/%s'\n" % (module, module, path))
-            continue
-        sys.stdout.write(pipes.quote("%s/files/%s" % (module, path)) + " ")
+        for module_dir in puppet_module_dir.split(':'):
+            if os.path.exists("%s/%s/files/%s" % (module_dir, module, path)) is False:
+                # This happens alot with variable expansion, not warning
+                #sys.stderr.write("Warning: file referenced in module %s missing '%s/files/%s'\n" % (module, module, path))
+                continue
+            sys.stdout.write(pipes.quote("%s/%s/files/%s" % (module_dir, module, path)) + " ")
     print
 
 def usage():

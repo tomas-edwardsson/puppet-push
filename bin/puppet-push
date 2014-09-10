@@ -62,7 +62,7 @@ fi
 PUSH_SITE_MANIFEST=$(echo ${PUSH_SITE_MANIFEST} | sed "s/{ENVIRONMENT}/${PUPPET_ENVIRONMENT}/")
 
 # Find the module path for the environment
-PUPPET_MODULE_DIR=$(puppet config print modulepath --environment ${PUPPET_ENVIRONMENT})
+PUPPET_MODULE_DIR=$(puppet master --configprint modulepath --environment ${PUPPET_ENVIRONMENT})
 
 # We need to export this so the python file extracter can read it
 export PUPPET_MODULE_DIR
@@ -177,7 +177,6 @@ function push_files() {
 	info "Pushing module files"
 	local FILESOURCES=$(extract-file-sources.py ${TARGET})
 	if [ -n "${FILESOURCES}" ]; then
-		cd ${PUPPET_MODULE_DIR} || kickthebucket "Unable to enter puppet modules dir ${PUPPET_MODULE_DIR}"
 		rsync -a -R --delete ${FILESOURCES} ${REMOTE_SSH_USER}@${TARGET}:${PUPPET_PUSH_BASE}/modules/ || \
 			kickthebucket "problems rsync'ing files"
 		cd /

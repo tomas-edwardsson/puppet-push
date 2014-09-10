@@ -61,10 +61,12 @@ REMOTE_SSH_USER=root
 VERBOSE=0
 ```
 
-Add alternative site-push.pp
-----------------------------
-We need a alternative site.pp (eg. /etc/puppet/manifests/site-push.pp) if you are using a filebucket server for the pull
-based hosts.
+Filebucket configuration
+------------------------
+If you are using a filebucket server for the pull based hosts you will need to override it for the push based hosts.
+
+An alternative site.pp file is provided which can be set in puppet-push.conf but if you can conditionally set the
+filebucket and file backup parameters in the manifests for the push based nodes it's possible to skip a special site.pp file.
 
 Containing:
 ```

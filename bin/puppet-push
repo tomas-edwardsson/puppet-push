@@ -58,6 +58,9 @@ if [ ! -z $1 ] && [ $1 == "--environment" ]; then
 	shift
 fi
 
+# Override {ENVIRONMENT} in manifest path, if set
+PUSH_SITE_MANIFEST=$(echo ${PUSH_SITE_MANIFEST} | sed "s/{ENVIRONMENT}/${PUPPET_ENVIRONMENT}/")
+
 # Find the module path for the environment
 PUPPET_MODULE_DIR=$(puppet config print modulepath --environment ${PUPPET_ENVIRONMENT})
 

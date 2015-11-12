@@ -124,7 +124,7 @@ function sync_fact() {
 
 	# Move the facts to the central puppet location
 	mv "${PUPPET_PUSH_BASE}/pending/${TARGET}.yaml" "${PUPPET_VAR_DIR}/yaml/facts/${TARGET}.yaml" \
-		|| kickthebucket "Unable to copy facts for node ${TARGET} to puppet directory"
+		|| kickthebucket "Unable to copy facts for node ${TARGET} to puppet directory"
 
 	# Perms are important
 	chown puppet:puppet "${PUPPET_VAR_DIR}/yaml/facts/${TARGET}.yaml"

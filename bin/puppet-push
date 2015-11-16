@@ -214,7 +214,7 @@ function applycatalog() {
 
 	APPLYLOG=$(mktemp '/tmp/puppet-push-apply.XXXXXXXX')
 	trap "rm -f ${APPLYLOG}" EXIT
-	ssh ${REMOTE_SSH_USER}@${TARGET} "puppet apply --catalog ${PUPPET_PUSH_BASE}/catalog ${PUPPET_ARGS}" \
+	ssh ${REMOTE_SSH_USER}@${TARGET} "puppet apply --environment ${PUPPET_ENVIRONMENT} --catalog ${PUPPET_PUSH_BASE}/catalog ${PUPPET_ARGS}" \
 		&> ${APPLYLOG}
 
 	egrep '^\[.;..m(fail|warning|err|crit|alert)' "${APPLYLOG}" > /dev/null

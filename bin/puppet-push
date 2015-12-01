@@ -116,7 +116,7 @@ function sync_fact() {
 	fact_fqdn=$(awk '$1 == "fqdn:" { print $2}' "${PUPPET_PUSH_BASE}/pending/${TARGET}.yaml")
 
 	if [ "${fact_fqdn}" != "${TARGET}" ]; then
-		kickthebucket "Please specify the hosts FQDN, ${fact_fqdn} != ${TARGET}" 
+		kickthebucket "Please specify the hosts FQDN, ${fact_fqdn} != ${TARGET}"
 	fi
 
 	# Apparently we need to delete the node yaml file so it re-evaluates it's environment
@@ -130,7 +130,7 @@ function sync_fact() {
 	chown puppet:puppet "${PUPPET_VAR_DIR}/yaml/facts/${TARGET}.yaml"
 	chmod 640 "${PUPPET_VAR_DIR}/yaml/facts/${TARGET}.yaml"
 }
- 
+
 
 # Generates a catalog on the puppet master
 function compile_catalog() {
@@ -157,7 +157,7 @@ function compile_catalog() {
 
 	puppet master --compile ${TARGET} -l ${COMPILELOG} ${EXTRA_ARGS} > "${PUPPET_PUSH_BASE}/pending/${TARGET}.cat" || kickthebucket "Unable to compile catalog for ${TARGET}"
 
-	# If we have any problems 
+	# If we have any problems
 	egrep '^\[.;..m(fail|warning|err|crit|alert)' "${PUPPET_PUSH_BASE}/pending/${TARGET}.cat" > /dev/null
 	if [ "$?" == "0" ]; then
 		warning "Problems in compiling catalog"
@@ -165,7 +165,7 @@ function compile_catalog() {
 	elif [ $verbose -gt 0 ]; then
 		egrep '^' "${PUPPET_PUSH_BASE}/pending/${TARGET}.cat"
 	fi
-	
+
 	# Remove messages from the catalog
 	sed -i '/^/d' "${PUPPET_PUSH_BASE}/pending/${TARGET}.cat"
 }
@@ -251,14 +251,14 @@ function check_puppet() {
 	info "Checking puppet installation"
 	local puppet_version=$(puppet --version || kickthebucket "Puppet not installed?")
 	info "Puppet ${puppet_version}"
-	verlt 2.7.0 ${puppet_version} || kickthebucket "You need at least puppet version 2.7.0, you have ${puppet_version}"
+	verlte 2.7.0 ${puppet_version} || kickthebucket "You need at least puppet version 2.7.0, you have ${puppet_version}"
 }
 
 function check_remote_puppet() {
 	info "Checking remote puppet installation"
 	local puppet_version=$(ssh -o PasswordAuthentication=no ${REMOTE_SSH_USER}@${TARGET} "puppet --version" || kickthebucket "Puppet not installed?")
 	info "Remote puppet ${puppet_version}"
-	verlt 2.7.0 ${puppet_version} || kickthebucket "You need at least puppet version 2.7.0, you have ${puppet_version}"
+	verlte 2.7.0 ${puppet_version} || kickthebucket "You need at least puppet version 2.7.0, you have ${puppet_version}"
 }
 function check_remote_rsync() {
 	info "Checking remote rsync installation"
@@ -281,4 +281,3 @@ applycatalog
 cleanup
 
 exit 0
-

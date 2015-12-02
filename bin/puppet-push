@@ -174,15 +174,21 @@ function compile_catalog() {
 # Pushes files from the File[] resource which use "source =>"
 # Only copies relevant files extracted from catalog
 function push_files() {
-	info "Pushing module files"
-	local FILESOURCES=$(extract-file-sources.py ${TARGET})
-	if [ -n "${FILESOURCES}" ]; then
-		rsync -a -R --delete ${FILESOURCES} ${REMOTE_SSH_USER}@${TARGET}:${PUPPET_PUSH_BASE}/modules/ || \
-			kickthebucket "problems rsync'ing files"
-		cd /
-	else
-		info "...No module files"
-	fi
+	local MODULE_ROOT
+	# Treat each possible module directory individually
+	for MODULE_ROOT in ${PUPPET_MODULE_DIR//:/ } ; do
+		info "Pushing module files (${MODULE_ROOT})"
+		local FILESOURCES=$(PUPPET_MODULE_DIR=$MODULE_ROOT extract-file-sources.py ${TARGET})
+		if [ -n "${FILESOURCES}" ]; then
+			cd $MODULE_ROOT
+			MODULE_ROOT="${MODULE_ROOT}/" # strip inluding the trailing slash
+			rsync -a -R --delete ${FILESOURCES#${MODULE_ROOT}} ${REMOTE_SSH_USER}@${TARGET}:${PUPPET_PUSH_BASE}/modules/ || \
+				kickthebucket "problems rsync'ing files"
+			cd /
+		else
+			info "...No module files"
+		fi
+	done
 }
 
 
